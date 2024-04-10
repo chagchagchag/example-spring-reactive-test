@@ -1,10 +1,13 @@
 package io.chagchagchag.example.reactive_test_example;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,5 +140,130 @@ public class JUnitAssertionsTest {
     else{
       log.info("예외가 발생하지 않았어요. 정상이에요.");
     }
+  }
+
+  @Test
+  public void ASSERT_ALL(){
+    Assertions.assertAll(
+        () -> {Assertions.assertTrue(true);},
+        () -> {Assertions.assertTrue(1 > 0);},
+        () -> {Assertions.assertTrue(List.of(1,2,3).size() == 3);}
+    );
+
+    Stream<Executable> stream = Stream.of(
+        () -> {Assertions.assertTrue(true);},
+        () -> {Assertions.assertTrue(1 > 0);},
+        () -> {Assertions.assertTrue(List.of(1,2,3).size() == 3);}
+    );
+    Assertions.assertAll(stream);
+  }
+
+  @Test
+  public void ASSERT_THROWS_ASSERT_THROWS_EXACTLY(){
+    Assertions.assertThrows(
+        IllegalStateException.class,
+        () -> {
+          throw new IllegalStateException("예외가 발생했어요");
+        }
+    );
+
+    Assertions.assertThrows(
+        RuntimeException.class, // IllegalArgumentException 은 RuntimeException 의 한 종류로 판단
+        () -> {
+          throw new IllegalStateException("예외가 발생했어요");
+        }
+    );
+
+    /** 테스트가 실패합니다.
+     * RuntimeException 은 IllegalStateException 의 상위타입입니다.
+    Assertions.assertThrows(
+        IllegalStateException.class,
+        () -> {
+          throw new RuntimeException("asdf");
+        }
+    );
+    */
+
+    Assertions.assertThrowsExactly(
+        IllegalStateException.class,
+        () -> {
+          throw new IllegalStateException("예외가 발생했어요");
+        }
+    );
+
+    /** 테스트가 실패합니다.
+     * IllegalStateException RuntimeException 의 한 종류이지만,
+     * Assertions.assertThrowsExactly 는 정확하게 타입이 일치해야만 성공으로 인식합니다.
+    Assertions.assertThrowsExactly(
+        RuntimeException.class,
+        () -> {
+          throw new IllegalStateException("예외가 발생했어요");
+        }
+    );
+    */
+  }
+
+  @Test
+  public void ASSERT_DOES_NOT_THROW(){
+    Assertions.assertDoesNotThrow(
+        () -> {}
+    );
+
+    Assertions.assertDoesNotThrow(
+        () -> "안녕하세요"
+    );
+  }
+
+  @Test
+  public void ASSERT_TIMOUT(){
+    final Duration timeLimit = Duration.ofSeconds(1);
+
+    Assertions.assertTimeout(timeLimit, () -> {
+      sleep(500);
+    });
+
+    var externalResult = Assertions.assertTimeout(timeLimit, () -> {
+      sleep(500);
+      return true;
+    });
+    Assertions.assertTrue(externalResult);
+
+    /** 실패하는 케이스 : 미리 지정한 1초의 타임아웃을 넘어서는 케이스
+    Assertions.assertTimeout(timeLimit, () -> {
+      sleep(2000);
+    });
+    */
+  }
+
+  public void sleep(long ms){
+    try{
+      Thread.sleep(ms);
+    }
+    catch (Exception e){
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void ASSERT_TIMEOUT_NO_PREEMPTIVELY(){
+    final Duration timeLimit = Duration.ofSeconds(8);
+
+    var externalResult = Assertions.assertTimeout(timeLimit, () -> {
+      sleep(7000);
+      return true;
+    });
+    Assertions.assertTrue(externalResult);
+  }
+
+  @Disabled
+  @TestMustFail
+  public void ASSERT_TIMEOUT_PREEMPTIVELY(){
+    final Duration timeLimit = Duration.ofSeconds(1);
+
+    var externalResult = Assertions.assertTimeoutPreemptively(timeLimit, () -> {
+      sleep(7000);
+      return true;
+    });
+    Assertions.assertTrue(externalResult);
   }
 }
