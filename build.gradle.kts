@@ -25,6 +25,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 	implementation("io.asyncer:r2dbc-mysql:1.1.2")
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+	testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.12.6")
+
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
